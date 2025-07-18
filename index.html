@@ -4,9 +4,149 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rede Benedetti App</title>
+  <title>Análise de Combustível</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #0e1116;
+      color: #fff;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 480px;
+      margin: auto;
+      background: #1a1f26;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      font-size: 0.9rem;
+      display: block;
+      margin: 0.5rem 0 0.2rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: none;
+      background: #2a2f36;
+      color: #fff;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #28a745;
+      border: none;
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #242a31;
+      border-radius: 8px;
+    }
+    .result h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .result p {
+      margin: 0.2rem 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Rede Benedetti App em construção</h1>
+  <div class="container">
+    <h1>Análise de Combustível</h1>
+
+    <label for="tipo">Tipo de Combustível</label>
+    <select id="tipo">
+      <option value="etanol">Etanol</option>
+      <option value="gasolina">Gasolina</option>
+      <option value="diesel">Diesel</option>
+    </select>
+
+    <label for="temperatura">Temperatura (°C)</label>
+    <input type="number" id="temperatura" min="0" max="50" step="1">
+
+    <label for="densidade">Densidade (g/cm³)</label>
+    <input type="number" id="densidade" step="0.0001">
+
+    <button onclick="verificarDensidade()">Analisar</button>
+
+    <div class="result" id="resultado" style="display:none;"></div>
+  </div>
+
+  <script>
+    const tabelas = {
+      etanol: {
+        26: { min: 0.8020, max: 0.8058, grau: { "0.804": 93.20 } },
+        24: { min: 0.8030, max: 0.8065, grau: { "0.804": 93.50 } },
+        22: { min: 0.8040, max: 0.8070, grau: { "0.805": 94.00 } },
+        20: { min: 0.8050, max: 0.8080, grau: { "0.806": 94.30 } }
+        // Adicione todas as temperaturas desejadas aqui
+      },
+      gasolina: {
+        26: { min: 0.7350, max: 0.7650 },
+        24: { min: 0.7360, max: 0.7660 },
+        22: { min: 0.7370, max: 0.7670 },
+        20: { min: 0.7380, max: 0.7680 }
+        // Adicione todas as temperaturas desejadas aqui
+      },
+      diesel: {
+        26: { min: 0.8200, max: 0.8450 },
+        24: { min: 0.8210, max: 0.8460 },
+        22: { min: 0.8220, max: 0.8470 },
+        20: { min: 0.8230, max: 0.8480 }
+        // Adicione todas as temperaturas desejadas aqui
+      }
+    };
+
+    function verificarDensidade() {
+      const tipo = document.getElementById('tipo').value;
+      const temperatura = parseInt(document.getElementById('temperatura').value);
+      const densidade = parseFloat(document.getElementById('densidade').value);
+      const ref = tabelas[tipo][temperatura];
+
+      let mensagem = `<h2>Resultado</h2>`;
+      if (!ref) {
+        mensagem += `<p style='color:orange'>Temperatura sem dados.</p>`;
+      } else {
+        mensagem += `<p>Temp Ref: ${temperatura}°C</p>`;
+        mensagem += `<p>Min dens: ${ref.min.toFixed(4)} g/cm³</p>`;
+        mensagem += `<p>Max dens: ${ref.max.toFixed(4)} g/cm³</p>`;
+
+        if (densidade >= ref.min && densidade <= ref.max) {
+          mensagem += `<p style='color:lime'>✓ Densidade CONFORME</p>`;
+        } else {
+          mensagem += `<p style='color:red'>✗ FORA DA FAIXA</p>`;
+        }
+
+        if (tipo === 'etanol' && ref.grau) {
+          const teor = ref.grau[densidade.toFixed(3)];
+          if (teor !== undefined) {
+            mensagem += `<p>Grau Alcoólico: ${teor.toFixed(2)} % m/m</p>`;
+          } else {
+            mensagem += `<p>Grau Alcoólico: —</p>`;
+          }
+        }
+      }
+
+      document.getElementById('resultado').style.display = 'block';
+      document.getElementById('resultado').innerHTML = mensagem;
+    }
+  </script>
 </body>
 </html>
